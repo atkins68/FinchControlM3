@@ -47,7 +47,7 @@ namespace Project_FinchControl
         static void Main(string[] args)
         {
             SetTheme();
-
+            DataDisplaySetTheme();
             DisplayWelcomeScreen();
             DisplayMenuScreen();
             DisplayClosingScreen();
@@ -87,7 +87,7 @@ namespace Project_FinchControl
                 Console.WriteLine("\tb) Talent Show");
                 Console.WriteLine("\tc) Data Recorder");
                 Console.WriteLine("\td) Alarm System");
-                Console.WriteLine("\te) User Programming");
+                Console.WriteLine("\te) User Programming");               
                 Console.WriteLine("\tf) Disconnect Finch Robot");
                 Console.WriteLine("\tq) Quit");
                 Console.Write("\t\tEnter Choice:");
@@ -120,7 +120,7 @@ namespace Project_FinchControl
 
                     case "f":
                         DisplayDisconnectFinchRobot(myFinch);
-                        break;
+                        break;                
 
                     case "q":
                         DisplayDisconnectFinchRobot(myFinch);
@@ -1055,9 +1055,13 @@ namespace Project_FinchControl
             commandParameters.ledBrightness = 0;
             commandParameters.waitSeconds = 0;
 
-            GetValidInteger("\tEnter Motor Speed [1 - 255]:", 1, 255, out commandParameters.motorSpeed);
-            GetValidInteger("\tEnter LED Brightness [1 - 255]:", 1, 255, out commandParameters.ledBrightness);
-            GetValidDouble("\tEnter Wait Time in Seconds:", 0, 10, out commandParameters.waitSeconds);
+           
+            
+           //FINISH BELOW
+           
+           //GetValidInteger("\tEnter Motor Speed [1 - 255]:", 1, 255, out commandParameters.motorSpeed);
+           // GetValidInteger("\tEnter LED Brightness [1 - 255]:", 1, 255, out commandParameters.ledBrightness);
+           // GetValidDouble("\tEnter Wait Time in Seconds:", 0, 10, out commandParameters.waitSeconds);
 
             Console.WriteLine();
             Console.WriteLine($"\tMotor speed: {commandParameters.motorSpeed}");
@@ -1072,7 +1076,7 @@ namespace Project_FinchControl
 
             #endregion
 
-            #region FINCH ROBOT MANAGEMENT
+        #region FINCH ROBOT MANAGEMENT
 
             /// <summary>
             /// *****************************************************************
@@ -1198,6 +1202,156 @@ namespace Project_FinchControl
             Console.WriteLine();
         }
 
+        #endregion
+
+        #region SET THEME
+
+
+
+        /// <summary>
+        /// *****************************************************************
+        /// * Sets up program to receive and store theme feedback from user *
+        /// *****************************************************************
+        /// </summary>
+        static (ConsoleColor foregroundColor, ConsoleColor backgroundColor) DataReadThemeData()
+        {
+            string dataPath = @"Data\Theme.txt";
+            string[] themeColors;
+
+            ConsoleColor foregroundColor;
+            ConsoleColor backgroundColor;
+
+            themeColors = File.ReadAllLines(dataPath);
+
+            Enum.TryParse(themeColors[0], true, out foregroundColor);
+            Enum.TryParse(themeColors[1], true, out backgroundColor);
+
+            return (foregroundColor, backgroundColor);
+
+        }
+
+
+
+        /// <summary>
+        /// *****************************************************************
+        /// *                   Write data to the .TXT file                         *
+        /// *****************************************************************
+        /// </summary>
+        static void WriteThemeData(ConsoleColor foreground, ConsoleColor background)
+        {
+            string dataPath = @"Data\Theme.txt";
+
+            File.WriteAllText(dataPath, foreground.ToString() + "\n");
+            File.AppendAllText(dataPath, background.ToString());
+
+
+        }
+
+
+
+
+
+
+        /// <summary>
+        /// *****************************************************************
+        /// *                   Gets Console Color from User                *
+        /// *****************************************************************
+        /// </summary>
+        static ConsoleColor GetConsoleColorFromUser(string property)
+        {
+            ConsoleColor consoleColor;
+            bool validConsoleColor;
+
+            do
+            {
+                Console.Write($"\tEnter a value for the {property}: ");
+                validConsoleColor = Enum.TryParse<ConsoleColor>(Console.ReadLine(), true, out consoleColor);
+
+                if (!validConsoleColor)
+                {
+                    Console.WriteLine("\n\t::::: It appears you did not provide a valid console color. Please try again. :::::\n");
+                }
+
+                else
+                {
+                    validConsoleColor = true;
+                }
+
+            } while (!validConsoleColor);
+
+            return consoleColor;
+
+        }
+
+
+
+
+
+
+
+        /// <summary>
+        /// *****************************************************************
+        /// *     Setting Theme and Validating  and display theme           *
+        /// *****************************************************************
+        /// </summary>
+        static void DataDisplaySetTheme()
+        {
+            (ConsoleColor foregroundColor, ConsoleColor backgroundColor) themeColors;
+            bool themeChosen = false;
+
+
+            //set current theme from data
+
+            themeColors = DataReadThemeData();
+            Console.ForegroundColor = themeColors.foregroundColor;
+            Console.BackgroundColor = themeColors.backgroundColor;
+            Console.Clear();
+            DisplayScreenHeader("Set Application Theme");
+
+
+            Console.WriteLine($"\tCurrent foreground color: {Console.ForegroundColor}");
+            Console.WriteLine($"\tCurrent background color: {Console.BackgroundColor}");
+            Console.WriteLine();
+
+
+
+            Console.Write("\tWould you like to change the current theme? [ YES | NO ]");
+            if (Console.ReadLine().ToLower() == "yes")
+            {
+                do
+                {
+                    themeColors.foregroundColor = GetConsoleColorFromUser("foreground");
+                    themeColors.backgroundColor = GetConsoleColorFromUser("background");
+
+
+
+                    //set new theme
+
+                    Console.ForegroundColor = themeColors.foregroundColor;
+                    Console.BackgroundColor = themeColors.backgroundColor;
+                    Console.Clear();
+                    DisplayScreenHeader("Set Application Theme");
+                    Console.WriteLine($"\tNew foreground color: {Console.ForegroundColor}");
+                    Console.WriteLine($"\tNew background color: {Console.BackgroundColor}");
+
+                    Console.WriteLine();
+                    Console.Write("\t Is this the theme you would like?");
+
+                    if (Console.ReadLine().ToLower() == "yes")
+                    {
+                        themeChosen = true;
+                        WriteThemeData(themeColors.foregroundColor, themeColors.backgroundColor);
+                    }
+
+                } while (!themeChosen);
+
+                DisplayContinuePrompt();
+
+            }
+
+        }
+            
+            
         #endregion
     }
 }
